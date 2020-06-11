@@ -18,27 +18,23 @@ import six.moves.urllib.parse
 import six.moves.urllib.request
 
 import pytz
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.core.files import File
-from django.core.files.storage import default_storage
-from django.template import Context, Template
-from django.utils.encoding import force_text
-from django.utils.timezone import now as django_now
-from django.utils.translation import ugettext as _
-from edx_sga.constants import ITEM_TYPE
-from edx_sga.showanswer import ShowAnswerXBlockMixin
-from edx_sga.tasks import (get_zip_file_name, get_zip_file_path,
-                           zip_student_submissions)
-from edx_sga.utils import (file_contents_iter, get_file_modified_time_utc,
-                           get_file_storage_path, get_sha1,
-                           is_finalized_submission, utcnow)
-from lms.djangoapps.courseware.models import StudentModule
-from safe_lxml import etree
-from student.models import user_by_anonymous_id
-from submissions import api as submissions_api
-from submissions.models import StudentItem as SubmissionsStudent
-from submissions.models import Submission
+from courseware.models import StudentModule  # lint-amnesty, pylint: disable=import-error
+from ccx_keys.locator import CCXLocator
+from django.conf import settings  # lint-amnesty, pylint: disable=import-error
+from django.core.exceptions import PermissionDenied  # lint-amnesty, pylint: disable=import-error
+from django.core.files import File  # lint-amnesty, pylint: disable=import-error
+from django.core.files.storage import default_storage  # lint-amnesty, pylint: disable=import-error
+from django.template import Context, Template  # lint-amnesty, pylint: disable=import-error
+from django.utils.encoding import force_text  # pylint: disable=import-error
+from django.utils.timezone import now as django_now  # pylint: disable=import-error
+from django.utils.translation import ugettext_lazy as _  # pylint: disable=import-error
+from safe_lxml import etree  # pylint: disable=import-error
+from student.models import user_by_anonymous_id  # lint-amnesty, pylint: disable=import-error
+from submissions import api as submissions_api  # lint-amnesty, pylint: disable=import-error
+from submissions.models import (
+    Submission,
+    StudentItem as SubmissionsStudent
+)  # lint-amnesty, pylint: disable=import-error
 from webob.response import Response
 from xblock.core import XBlock
 from xblock.exceptions import JsonHandlerError
@@ -921,6 +917,11 @@ class StaffGradedAssignmentXBlock(StudioEditableXBlockMixin, ShowAnswerXBlockMix
         """
         Check if user role is instructor.
         """
+        # If it's a CCX course and the user has staff role (CCX coach)
+        # the user must be able to grade assignments without instructor approval.
+        if isinstance(self.course_id, CCXLocator):
+            return self.xmodule_runtime.get_user_role() == 'staff'
+
         return self.xmodule_runtime.get_user_role() == 'instructor'
 
     def show_staff_grading_interface(self):
