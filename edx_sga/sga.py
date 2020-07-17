@@ -917,10 +917,10 @@ class StaffGradedAssignmentXBlock(StudioEditableXBlockMixin, ShowAnswerXBlockMix
         """
         Check if user role is instructor.
         """
-        # If it's a CCX course and the user has staff role (CCX coach)
+        # If it's a CCX course and the user has staff (CCX coach) or instructor role
         # the user must be able to grade assignments without instructor approval.
         if isinstance(self.course_id, CCXLocator):
-            return self.xmodule_runtime.get_user_role() == 'staff'
+            return self.xmodule_runtime.get_user_role() in ('staff', 'instructor')
 
         return self.xmodule_runtime.get_user_role() == 'instructor'
 
