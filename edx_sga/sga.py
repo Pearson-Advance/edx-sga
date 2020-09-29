@@ -1046,7 +1046,7 @@ def render_template(template_path, context=None):  # pragma: NO COVER
         context = {}
 
     template_str = load_resource(template_path)
-    template = Template(template_str)
+    template = Template(template_str.replace("b\'", '').replace('\\n', '').replace("\'", ''))
     return template.render(Context(context))
 
 
