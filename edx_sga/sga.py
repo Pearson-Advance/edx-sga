@@ -18,7 +18,6 @@ import six.moves.urllib.parse
 import six.moves.urllib.request
 
 import pytz
-from lms.djangoapps.courseware.models import StudentModule  # lint-amnesty, pylint: disable=import-error
 from ccx_keys.locator import CCXLocator
 from django.conf import settings  # lint-amnesty, pylint: disable=import-error
 from django.core.exceptions import PermissionDenied  # lint-amnesty, pylint: disable=import-error
@@ -28,6 +27,14 @@ from django.template import Context, Template  # lint-amnesty, pylint: disable=i
 from django.utils.encoding import force_text  # pylint: disable=import-error
 from django.utils.timezone import now as django_now  # pylint: disable=import-error
 from django.utils.translation import ugettext_lazy as _  # pylint: disable=import-error
+from edx_sga.constants import ITEM_TYPE
+from edx_sga.showanswer import ShowAnswerXBlockMixin
+from edx_sga.tasks import (get_zip_file_name, get_zip_file_path,
+                           zip_student_submissions)
+from edx_sga.utils import (file_contents_iter, get_file_modified_time_utc,
+                           get_file_storage_path, get_sha1,
+                           is_finalized_submission, utcnow)
+from lms.djangoapps.courseware.models import StudentModule  # lint-amnesty, pylint: disable=import-error
 from safe_lxml import etree  # pylint: disable=import-error
 from student.models import user_by_anonymous_id  # lint-amnesty, pylint: disable=import-error
 from submissions import api as submissions_api  # lint-amnesty, pylint: disable=import-error
