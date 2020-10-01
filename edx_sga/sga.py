@@ -18,7 +18,7 @@ import six.moves.urllib.parse
 import six.moves.urllib.request
 
 import pytz
-from courseware.models import StudentModule  # lint-amnesty, pylint: disable=import-error
+from lms.djangoapps.courseware.models import StudentModule  # lint-amnesty, pylint: disable=import-error
 from ccx_keys.locator import CCXLocator
 from django.conf import settings  # lint-amnesty, pylint: disable=import-error
 from django.core.exceptions import PermissionDenied  # lint-amnesty, pylint: disable=import-error
