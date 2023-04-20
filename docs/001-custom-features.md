@@ -19,3 +19,15 @@ This image shows the same SGA view, but with an admin role, indicating that only
 This feature allows CCX coaches (ccx_coach in the course access role model) and CCX admin users (instructor in the course access role model) to grade assignments in their CCX courses.
 
 ![](../docs/videos/001-02.gif "001-01")
+
+### Testing
+
+- Install the plugin (LMS and CMS).
+- Create a course and add an SGA component: https://github.com/Pearson-Advance/edx-sga/tree/pearson-release/olive.main#course-authoring-in-edx-studio
+- Create a new CCX course.
+- Submit a test assignment with a student user.
+- Go to the unit containing the SGA component with the CCX tutor or instructor role.
+- Click on the "Grade Submissions" button.
+- Find the assignment and grade it.
+- After grading the assignment, it should not be necessary to approve the grade.
+- Go to the progress page, with the student user and check if the grade is assigned to the unit containing the SGA component.
