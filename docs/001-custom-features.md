@@ -18,5 +18,4 @@ This image shows the same SGA view, but with an admin role, indicating that only
 
 This feature allows CCX coaches (ccx_coach in the course access role model) and CCX admin users (instructor in the course access role model) to grade assignments in their CCX courses.
 
-![](../docs/videos/001-01.webm "001-01")
 ![](../docs/videos/001-02.gif "001-01")
