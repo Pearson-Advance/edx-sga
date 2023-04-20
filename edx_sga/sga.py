@@ -27,6 +27,7 @@ from django.utils.translation import gettext as _
 from lms.djangoapps.courseware.models import StudentModule
 from openedx.core.lib.safe_lxml import etree
 from common.djangoapps.student.models import user_by_anonymous_id
+from ccx_keys.locator import CCXLocator
 from submissions import api as submissions_api
 from submissions.models import StudentItem as SubmissionsStudent
 from submissions.models import Submission
@@ -913,6 +914,11 @@ class StaffGradedAssignmentXBlock(
         """
         Check if user role is instructor.
         """
+        # If it's a CCX course and the user has staff role (ccx_coach) or admin role (instructor)
+        # the user must be able to grade assignments without instructor approval.
+        if isinstance(self.course_id, CCXLocator):
+            return self.xmodule_runtime.get_user_role() in ('staff', 'instructor')
+
         return self.xmodule_runtime.get_user_role() == "instructor"
 
     def show_staff_grading_interface(self):
