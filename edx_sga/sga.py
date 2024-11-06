@@ -19,7 +19,6 @@ import pytz
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
-from django.core.files.storage import default_storage
 from django.template import Context, Template
 from django.utils.encoding import force_text
 from django.utils.timezone import now as django_now
@@ -40,6 +39,7 @@ from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xmodule.contentstore.content import StaticContent
 from xmodule.util.duedate import get_extended_due_date
 
+from edx_sga.backends import StaffGradedAssignmentStorage
 from edx_sga.constants import ITEM_TYPE
 from edx_sga.showanswer import ShowAnswerXBlockMixin
 from edx_sga.tasks import get_zip_file_name, get_zip_file_path, zip_student_submissions
@@ -159,6 +159,14 @@ class StaffGradedAssignmentXBlock(
         default=None,
         help=_("When the annotated file was uploaded"),
     )
+
+    @property
+    def xblock_storage(self):
+        """
+        Defines the storage to be used in this Xblock instance.
+        """
+
+        return StaffGradedAssignmentStorage().sga_storage()
 
     @classmethod
     def student_upload_max_size(cls):
@@ -283,10 +291,11 @@ class StaffGradedAssignmentXBlock(
             path,
             user.username,
         )
-        if default_storage.exists(path):
+        xblock_storage = self.xblock_storage
+        if xblock_storage.exists(path):
             # save latest submission
-            default_storage.delete(path)
-        default_storage.save(path, File(upload.file))
+            xblock_storage.delete(path)
+        xblock_storage.save(path, File(upload.file))
         return Response(json_body=self.student_state())
 
     @XBlock.handler
@@ -328,8 +337,9 @@ class StaffGradedAssignmentXBlock(
         state["annotated_mimetype"] = mimetypes.guess_type(upload.file.name)[0]
         state["annotated_timestamp"] = utcnow().strftime(DateTime.DATETIME_FORMAT)
         path = self.file_storage_path(sha1, filename)
-        if not default_storage.exists(path):
-            default_storage.save(path, File(upload.file))
+        xblock_storage = self.xblock_storage
+        if not xblock_storage.exists(path):
+            xblock_storage.save(path, File(upload.file))
         module.state = json.dumps(state)
         module.save()
         log.info(
@@ -620,8 +630,9 @@ class StaffGradedAssignmentXBlock(
             submission_file_path = self.file_storage_path(
                 submission_file_sha1, submission_filename
             )
-            if default_storage.exists(submission_file_path):
-                default_storage.delete(submission_file_path)
+            xblock_storage = self.xblock_storage
+            if xblock_storage.exists(submission_file_path):
+                xblock_storage.delete(submission_file_path)
             submissions_api.reset_score(
                 student_id, self.block_course_id, self.block_id, clear_state=True
             )
@@ -977,7 +988,7 @@ class StaffGradedAssignmentXBlock(
         zip_file_path = get_zip_file_path(
             user.username, self.block_course_id, self.block_id, self.location
         )
-        return default_storage.exists(zip_file_path)
+        return self.xblock_storage.exists(zip_file_path)
 
     def count_archive_files(self, user):
         """
@@ -987,7 +998,7 @@ class StaffGradedAssignmentXBlock(
         zip_file_path = get_zip_file_path(
             user.username, self.block_course_id, self.block_id, self.location
         )
-        with default_storage.open(zip_file_path, "rb") as zip_file:
+        with self.xblock_storage.open(zip_file_path, "rb") as zip_file:
             with closing(ZipFile(zip_file)) as archive:
                 return len(archive.infolist())
 

@@ -6,12 +6,12 @@ import os
 import tempfile
 import zipfile
 
-from django.core.files.storage import default_storage
 from celery import shared_task
 from opaque_keys.edx.locator import BlockUsageLocator
 from common.djangoapps.student.models import user_by_anonymous_id
 from submissions import api as submissions_api
 
+from edx_sga.backends import StaffGradedAssignmentStorage
 from edx_sga.constants import ITEM_TYPE
 from edx_sga.utils import get_file_storage_path, is_finalized_submission
 
@@ -73,7 +73,8 @@ def _compress_student_submissions(zip_file_path, block_id, course_id, locator):
                     student_username,
                     submission_file_path,
                 )
-                with default_storage.open(
+                xblock_storage = StaffGradedAssignmentStorage().sga_storage()
+                with xblock_storage.open(
                     submission_file_path, "rb"
                 ) as destination_file:
                     filename_in_zip = f"{student_username}_{os.path.basename(submission_file_path)}"
@@ -82,7 +83,7 @@ def _compress_student_submissions(zip_file_path, block_id, course_id, locator):
         tmp.seek(0)
         # Write the bytes of the in-memory zip file to an actual file
         log.info("Moving zip file from memory to storage at path: %s ", zip_file_path)
-        default_storage.save(zip_file_path, tmp)
+        xblock_storage.save(zip_file_path, tmp)
 
 
 @shared_task
@@ -99,9 +100,10 @@ def zip_student_submissions(course_id, block_id, locator_unicode, username):
     locator = BlockUsageLocator.from_string(locator_unicode)
     zip_file_path = get_zip_file_path(username, course_id, block_id, locator)
     log.info("Creating zip file for course: %s at path: %s", locator, zip_file_path)
-    if default_storage.exists(zip_file_path):
+    xblock_storage = StaffGradedAssignmentStorage().sga_storage()
+    if xblock_storage.exists(zip_file_path):
         log.info("Deleting already-existing zip file at path: %s", zip_file_path)
-        default_storage.delete(zip_file_path)
+        xblock_storage.delete(zip_file_path)
     _compress_student_submissions(zip_file_path, block_id, course_id, locator)
 
 

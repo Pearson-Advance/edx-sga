@@ -2,7 +2,12 @@
 
 BLOCK_SIZE = 2 ** 10 * 8  # 8kb
 ITEM_TYPE = "sga"
-
+AWS_S3_FIELDS = [
+    'aws_s3_access_key',
+    'aws_s3_secret_key',
+    'aws_s3_bucket_name',
+    'aws_s3_region_name'
+]
 
 class ShowAnswer:
     """

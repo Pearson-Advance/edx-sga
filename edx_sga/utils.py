@@ -9,7 +9,7 @@ from functools import partial
 
 import pytz
 from django.conf import settings
-from django.core.files.storage import default_storage
+from edx_sga.backends import StaffGradedAssignmentStorage
 from edx_sga.constants import BLOCK_SIZE
 
 
@@ -42,7 +42,7 @@ def get_file_modified_time_utc(file_path):
         else pytz.utc
     )
 
-    file_time = default_storage.get_modified_time(file_path)
+    file_time = StaffGradedAssignmentStorage().sga_storage().get_modified_time(file_path)
 
     if file_time.tzinfo is None:
         return file_timezone.localize(file_time).astimezone(pytz.utc)
@@ -74,5 +74,5 @@ def file_contents_iter(file_path):
     """
     Returns an iterator over the contents of a file located at the given file path
     """
-    file_descriptor = default_storage.open(file_path)
+    file_descriptor = StaffGradedAssignmentStorage().sga_storage().open(file_path)
     return iter(partial(file_descriptor.read, BLOCK_SIZE), b"")
