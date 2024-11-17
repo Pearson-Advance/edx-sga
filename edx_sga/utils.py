@@ -8,14 +8,14 @@ import time
 from functools import partial
 
 import pytz
-from django.conf import settings
 from django.core.files.storage import default_storage as django_default_storage, get_storage_class
+from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from edx_sga.constants import BLOCK_SIZE
 
 
 def get_default_storage():
     """
-    Get config for storage from settings, use Django's default_storage if no such settings are defined
+    Get config for storage from site configurations, use Django's default_storage if no such settings are defined
     """
     # .. setting_name: SGA_STORAGE_SETTINGS
     # .. setting_default: {}
@@ -25,7 +25,7 @@ def get_default_storage():
     #        STORAGE_CLASS: 'storage',
     #        STORAGE_KWARGS: {}
     #    }
-    sga_storage_settings = getattr(settings, "SGA_STORAGE_SETTINGS", None)
+    sga_storage_settings = configuration_helpers.get_value('SGA_STORAGE_SETTINGS', None)
 
     if sga_storage_settings:
         return get_storage_class(
