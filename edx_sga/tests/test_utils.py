@@ -1,7 +1,7 @@
 """
 Tests for SGA utility functions
 """
-from django.test import override_settings
+from unittest.mock import patch
 from django.core.files.storage import default_storage
 import pytest
 import pytz
@@ -35,23 +35,34 @@ def test_utcnow():
     assert is_near_now(now)
     assert now.tzinfo.zone == pytz.utc.zone
 
-@override_settings(SGA_STORAGE_SETTINGS={
-        'STORAGE_CLASS': 'storages.backends.s3boto3.S3Boto3Storage',
-        'STORAGE_KWARGS':
-            {'bucket_name': 'test', 'location': 'abc/def'}
-    })
-def test_get_default_storage_with_settings_override():
+patch("edx_sga.utils.configuration_helpers")
+def test_get_default_storage_with_settings_override(mock_configuration_helpers):
     """
     get_default_storage should return an S3Boto3Storage object
     """
+    mock_configuration_helpers.return_value.get_value.return_value = (
+        {
+            "SGA_STORAGE_SETTINGS": {
+                "STORAGE_CLASS": "storages.backends.s3boto3.S3Boto3Storage",
+                "STORAGE_KWARGS": {
+                    "access_key": "test_key",
+                    "secret_key": "test_secret",
+                    "bucket_name": "test-bucket-1",
+                    "region_name": "us-east-1",
+                },
+            },
+        },
+    )
     storage = get_default_storage()
     assert storage.__class__ == S3Boto3Storage
     # make sure kwargs are passed through constructor
     assert storage.bucket.name == 'test'
 
-def test_get_default_storage_without_settings_override():
+patch("edx_sga.utils.configuration_helpers")
+def test_get_default_storage_without_settings_override(mock_configuration_helpers):
     """
     get_default_storage should return default_storage object
     """
+    mock_configuration_helpers.return_value.get_value.return_value = {}
     storage = get_default_storage()
     assert storage == default_storage
