@@ -54,8 +54,6 @@ from edx_sga.utils import (
 
 log = logging.getLogger(__name__)
 
-default_storage = get_default_storage()
-
 
 def reify(meth):
     """
@@ -285,6 +283,7 @@ class StaffGradedAssignmentXBlock(
             path,
             user.username,
         )
+        default_storage = get_default_storage()
         if default_storage.exists(path):
             # save latest submission
             default_storage.delete(path)
@@ -330,6 +329,7 @@ class StaffGradedAssignmentXBlock(
         state["annotated_mimetype"] = mimetypes.guess_type(upload.file.name)[0]
         state["annotated_timestamp"] = utcnow().strftime(DateTime.DATETIME_FORMAT)
         path = self.file_storage_path(sha1, filename)
+        default_storage = get_default_storage()
         if not default_storage.exists(path):
             default_storage.save(path, File(upload.file))
         module.state = json.dumps(state)
@@ -614,6 +614,7 @@ class StaffGradedAssignmentXBlock(
         used, the block's "clear_student_state" function is called if it exists.
         """
         student_id = kwargs["user_id"]
+        default_storage = get_default_storage()
         for submission in submissions_api.get_submissions(
             self.get_student_item_dict(student_id)
         ):
@@ -979,7 +980,7 @@ class StaffGradedAssignmentXBlock(
         zip_file_path = get_zip_file_path(
             user.username, self.block_course_id, self.block_id, self.location
         )
-        return default_storage.exists(zip_file_path)
+        return get_default_storage().exists(zip_file_path)
 
     def count_archive_files(self, user):
         """
@@ -989,7 +990,7 @@ class StaffGradedAssignmentXBlock(
         zip_file_path = get_zip_file_path(
             user.username, self.block_course_id, self.block_id, self.location
         )
-        with default_storage.open(zip_file_path, "rb") as zip_file:
+        with get_default_storage().open(zip_file_path, "rb") as zip_file:
             with closing(ZipFile(zip_file)) as archive:
                 return len(archive.infolist())
 
