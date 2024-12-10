@@ -8,6 +8,7 @@ import time
 from functools import partial
 
 import pytz
+from django.conf import settings
 from django.core.files.storage import default_storage as django_default_storage, get_storage_class
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from edx_sga.constants import BLOCK_SIZE
