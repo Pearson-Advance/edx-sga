@@ -16,8 +16,6 @@ from edx_sga.utils import get_default_storage, get_file_storage_path, is_finaliz
 
 log = logging.getLogger(__name__)
 
-default_storage = get_default_storage()
-
 
 def _get_student_submissions(block_id, course_id, locator):
     """
@@ -66,6 +64,7 @@ def _compress_student_submissions(zip_file_path, block_id, course_id, locator):
         zip_file_path,
     )
     # Build the zip file in memory using temporary file.
+    default_storage = get_default_storage()
     with tempfile.TemporaryFile() as tmp:
         with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED) as zip_pointer:
             for student_username, submission_file_path in student_submissions:
@@ -100,6 +99,7 @@ def zip_student_submissions(course_id, block_id, locator_unicode, username):
     locator = BlockUsageLocator.from_string(locator_unicode)
     zip_file_path = get_zip_file_path(username, course_id, block_id, locator)
     log.info("Creating zip file for course: %s at path: %s", locator, zip_file_path)
+    default_storage = get_default_storage()
     if default_storage.exists(zip_file_path):
         log.info("Deleting already-existing zip file at path: %s", zip_file_path)
         default_storage.delete(zip_file_path)
