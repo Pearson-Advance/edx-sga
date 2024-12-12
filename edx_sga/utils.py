@@ -36,8 +36,6 @@ def get_default_storage():
     # If settings not defined, use default_storage from Django
     return django_default_storage
 
-default_storage = get_default_storage()
-
 def utcnow():
     """
     Get current date and time in UTC
@@ -67,7 +65,7 @@ def get_file_modified_time_utc(file_path):
         else pytz.utc
     )
 
-    file_time = default_storage.get_modified_time(file_path)
+    file_time = get_default_storage().get_modified_time(file_path)
 
     if file_time.tzinfo is None:
         return file_timezone.localize(file_time).astimezone(pytz.utc)
@@ -99,5 +97,5 @@ def file_contents_iter(file_path):
     """
     Returns an iterator over the contents of a file located at the given file path
     """
-    file_descriptor = default_storage.open(file_path)
+    file_descriptor = get_default_storage().open(file_path)
     return iter(partial(file_descriptor.read, BLOCK_SIZE), b"")
