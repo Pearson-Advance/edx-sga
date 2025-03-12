@@ -27,6 +27,7 @@ from lms.djangoapps.courseware.models import StudentModule
 from openedx.core.lib.safe_lxml import etree
 from common.djangoapps.student.models import user_by_anonymous_id
 from ccx_keys.locator import CCXLocator
+from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from submissions import api as submissions_api
 from submissions.models import StudentItem as SubmissionsStudent
 from submissions.models import Submission
@@ -167,7 +168,8 @@ class StaffGradedAssignmentXBlock(
         """
         returns max file size limit in system
         """
-        return getattr(
+        return configuration_helpers.get_value('XBLOCK_HANDLER_STUDENT_FILEUPLOAD_MAX_SIZE', {}).get(
+            'upload_assignment') or getattr(
             settings, "STUDENT_FILEUPLOAD_MAX_SIZE", cls.STUDENT_FILEUPLOAD_MAX_SIZE
         )
 
